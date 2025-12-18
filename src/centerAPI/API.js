@@ -27,10 +27,26 @@ API.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
+      console.error('❌ 401 Unauthorized - Token yaroqsiz');
+
       localStorage.clear();
-      window.location.href = '/login';
+
+      if (window.location.pathname !== '/login') {
+        console.log("🔄 Login sahifasiga yo'naltirilmoqda...");
+        window.location.href = '/login';
+      }
+    }
+
+    if (error.response?.status === 403) {
+      console.error("❌ 403 Forbidden - Ruxsat yo'q");
+    }
+
+    if (error.response?.status === 500) {
+      console.error('❌ 500 Server Error - Server xatosi');
     }
 
     return Promise.reject(error);
   }
 );
+
+export default API;

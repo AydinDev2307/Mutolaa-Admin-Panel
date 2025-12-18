@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
-import { API } from '../centerAPI/API';
+import API from '../centerAPI/API';
+
 const Header = () => {
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
   const [name, setName] = useState();
+  const { logout } = useAuthStore();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user?.name || 'Admin';
   const getName = async () => {
     try {
       const res = await API.get('/auth/admin/profile/');
@@ -22,10 +21,19 @@ const Header = () => {
   useEffect(() => {
     getName();
   }, []);
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userName = user?.name || 'Admin';
+
   const handleLogout = () => {
+    console.log('🚪 Logout amalga oshirilmoqda...');
+
     logout();
+
     setShowLogoutModal(false);
+
     navigate('/login');
+
+    console.log('✅ Logout muvaffaqiyatli');
   };
 
   return (
@@ -396,6 +404,10 @@ const Header = () => {
               <span>📊</span>
               <span>Dashboard</span>
             </button>
+            <button className="nav-btn" onClick={() => navigate('/favorites')}>
+              <span>❤️</span>
+              <span>Sevimlilar</span>
+            </button>
             <button className="nav-btn" onClick={() => navigate('/addLibrary')}>
               <span>➕</span>
               <span>Kutubxona qo'shish</span>
@@ -404,6 +416,15 @@ const Header = () => {
         </div>
 
         <div className="header-right">
+          <div className="search-box">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Kutubxonalarni qidirish..."
+            />
+            <span className="search-icon">🔍</span>
+          </div>
+
           <div className="profile-section">
             <div
               className="profile-btn"

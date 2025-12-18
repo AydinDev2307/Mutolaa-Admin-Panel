@@ -1,4 +1,3 @@
-import { Navigate } from 'react-router-dom';
 import { create } from 'zustand';
 
 const useAuthStore = create((set) => ({
@@ -31,7 +30,16 @@ const useAuthStore = create((set) => ({
       user: null,
       isAuth: false,
     });
+
     localStorage.clear();
+
+    const favorites = localStorage.getItem('favorites');
+    localStorage.clear();
+    if (favorites) {
+      localStorage.setItem('favorites', favorites);
+    }
+
+    console.log('✅ Logout: LocalStorage tozalandi');
   },
 
   updateUser: (user) => {
