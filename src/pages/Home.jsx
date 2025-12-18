@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { API } from '../centerAPI/API';
 import { Container, Flex, Loader } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
@@ -6,12 +7,15 @@ import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 
 const Home = () => {
+  const navigate = useNavigate();
   const [libraries, setLibraries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredId, setHoveredId] = useState(null);
   const [filter, setFilter] = useState('all');
   const [openMenuId, setOpenMenuId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchLibraries();
@@ -70,14 +74,12 @@ const Home = () => {
       console.log("🌐 So'rov URL:", API.defaults.baseURL + url);
       console.log('📦 Yuborilayotgan data:', { is_active: status });
 
-      // Backend is_active field'ini kutmoqda
       const response = await API.patch(url, {
         is_active: status,
       });
 
       console.log('✅ Server javobi:', response.data);
 
-      // Local state'ni yangilash
       setLibraries((prev) =>
         prev.map((item) =>
           item.id === library.id ? { ...item, is_active: status } : item
@@ -153,6 +155,10 @@ const Home = () => {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [openMenuId]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
+
   if (loading) {
     return (
       <Container>
@@ -179,6 +185,156 @@ const Home = () => {
     if (filter === 'inactive') return !library.is_active;
     return true;
   });
+
+  const totalPages = Math.ceil(filteredLibraries.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentLibraries = filteredLibraries.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    if (startPage > 1) {
+      pages.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          style={{
+            padding: '10px 15px',
+            margin: '0 5px',
+            border: '2px solid yellow',
+            borderRadius: '8px',
+            backgroundColor: '#1a1a1a',
+            color: 'yellow',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '14px',
+            transition: 'all 0.3s',
+          }}>
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        pages.push(
+          <span key="dots1" style={{ color: 'yellow', margin: '0 5px' }}>
+            ...
+          </span>
+        );
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          style={{
+            padding: '10px 15px',
+            margin: '0 5px',
+            border: `2px solid ${i === currentPage ? 'orange' : 'yellow'}`,
+            borderRadius: '8px',
+            backgroundColor: i === currentPage ? 'orange' : '#1a1a1a',
+            color: i === currentPage ? '#000' : 'yellow',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '14px',
+            transition: 'all 0.3s',
+          }}>
+          {i}
+        </button>
+      );
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(
+          <span key="dots2" style={{ color: 'yellow', margin: '0 5px' }}>
+            ...
+          </span>
+        );
+      }
+      pages.push(
+        <button
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          style={{
+            padding: '10px 15px',
+            margin: '0 5px',
+            border: '2px solid yellow',
+            borderRadius: '8px',
+            backgroundColor: '#1a1a1a',
+            color: 'yellow',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '14px',
+            transition: 'all 0.3s',
+          }}>
+          {totalPages}
+        </button>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '30px 0',
+          gap: '10px',
+        }}>
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          style={{
+            padding: '10px 20px',
+            border: '2px solid yellow',
+            borderRadius: '8px',
+            backgroundColor: '#1a1a1a',
+            color: 'yellow',
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            fontWeight: '600',
+            fontSize: '14px',
+            opacity: currentPage === 1 ? 0.5 : 1,
+            transition: 'all 0.3s',
+          }}>
+          ← Oldingi
+        </button>
+        {pages}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          style={{
+            padding: '10px 20px',
+            border: '2px solid yellow',
+            borderRadius: '8px',
+            backgroundColor: '#1a1a1a',
+            color: 'yellow',
+            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+            fontWeight: '600',
+            fontSize: '14px',
+            opacity: currentPage === totalPages ? 0.5 : 1,
+            transition: 'all 0.3s',
+          }}>
+          Keyingi →
+        </button>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -352,201 +508,210 @@ const Home = () => {
                 </p>
               </div>
             ) : (
-              filteredLibraries.map((library) => (
-                <div
-                  key={library.id}
-                  onMouseEnter={() => setHoveredId(library.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  style={{
-                    width: '90%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    margin: '0 auto 15px auto',
-                    border: `2px solid ${
-                      library.is_active ? '#4CAF50' : '#f44336'
-                    }`,
-                    padding: '20px',
-                    borderRadius: '15px',
-                    backgroundColor:
-                      hoveredId === library.id ? '#2a2a2a' : '#1a1a1a',
-                    transform:
-                      hoveredId === library.id ? 'scale(1.02)' : 'scale(1)',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
-                    boxShadow:
-                      hoveredId === library.id
-                        ? '0 8px 16px rgba(255,165,0,0.3)'
-                        : '0 2px 4px rgba(0,0,0,0.3)',
-                  }}>
-                  <Flex
+              <>
+                {currentLibraries.map((library) => (
+                  <div
+                    key={library.id}
+                    onClick={() => navigate(`/detail/${library.id}`)}
+                    onMouseEnter={() => setHoveredId(library.id)}
+                    onMouseLeave={() => setHoveredId(null)}
                     style={{
+                      width: '90%',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      position: 'relative',
+                      flexDirection: 'column',
+                      margin: '0 auto 15px auto',
+                      border: `2px solid ${
+                        library.is_active ? '#4CAF50' : '#f44336'
+                      }`,
+                      padding: '20px',
+                      borderRadius: '15px',
+                      backgroundColor:
+                        hoveredId === library.id ? '#2a2a2a' : '#1a1a1a',
+                      transform:
+                        hoveredId === library.id ? 'scale(1.02)' : 'scale(1)',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      boxShadow:
+                        hoveredId === library.id
+                          ? '0 8px 16px rgba(255,165,0,0.3)'
+                          : '0 2px 4px rgba(0,0,0,0.3)',
                     }}>
-                    <div style={{ width: '150px' }}>
-                      <h2
-                        style={{
-                          color: 'yellow',
-                          margin: 0,
-                          fontSize: '18px',
-                        }}>
-                        {library.name}
-                      </h2>
-                    </div>
-                    <div style={{ width: '310px' }}>
-                      <p style={{ color: '#ddd', margin: 0, fontSize: '14px' }}>
-                        {library.address}
-                      </p>
-                    </div>
-                    <div
+                    <Flex
                       style={{
-                        width: '80px',
-                        border: `2px solid ${
-                          library.is_active ? '#4CAF50' : '#f44336'
-                        }`,
-                        height: '35px',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '10px',
-                        backgroundColor: library.is_active
-                          ? 'rgba(76, 175, 80, 0.1)'
-                          : 'rgba(244, 67, 54, 0.1)',
-                      }}>
-                      <p
-                        style={{
-                          color: library.is_active ? '#4CAF50' : '#f44336',
-                          margin: 0,
-                          fontWeight: 'bold',
-                          fontSize: '14px',
-                        }}>
-                        {library.is_active ? '✓ Faol' : '✗ Nofaol'}
-                      </p>
-                    </div>
-                    <div style={{ width: '100px' }}>
-                      <p
-                        style={{
-                          color: 'yellow',
-                          margin: 0,
-                          fontSize: '15px',
-                          fontWeight: '600',
-                        }}>
-                        📚 {library.total_books || 0} ta
-                      </p>
-                    </div>
-                    <div
-                      className="menu-container"
-                      style={{
-                        width: '100px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        paddingLeft: '10px',
+                        justifyContent: 'space-between',
                         position: 'relative',
                       }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuId(
-                            openMenuId === library.id ? null : library.id
-                          );
-                        }}
-                        disabled={updatingId === library.id}
+                      <div style={{ width: '150px' }}>
+                        <h2
+                          style={{
+                            color: 'yellow',
+                            margin: 0,
+                            fontSize: '18px',
+                          }}>
+                          {library.name}
+                        </h2>
+                      </div>
+                      <div style={{ width: '310px' }}>
+                        <p
+                          style={{
+                            color: '#ddd',
+                            margin: 0,
+                            fontSize: '14px',
+                          }}>
+                          {library.address}
+                        </p>
+                      </div>
+                      <div
                         style={{
+                          width: '80px',
+                          border: `2px solid ${
+                            library.is_active ? '#4CAF50' : '#f44336'
+                          }`,
+                          height: '35px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          width: '40px',
-                          height: '40px',
-                          border: '2px solid yellow',
-                          borderRadius: '50%',
-                          backgroundColor: '#1a1a1a',
-                          color: 'yellow',
-                          fontSize: '24px',
-                          cursor:
-                            updatingId === library.id ? 'wait' : 'pointer',
-                          transition: 'all 0.3s',
-                          opacity: updatingId === library.id ? 0.5 : 1,
+                          borderRadius: '10px',
+                          backgroundColor: library.is_active
+                            ? 'rgba(76, 175, 80, 0.1)'
+                            : 'rgba(244, 67, 54, 0.1)',
                         }}>
-                        {updatingId === library.id ? '⏳' : '⋮'}
-                      </button>
-                      {openMenuId === library.id &&
-                        updatingId !== library.id && (
-                          <div
-                            onClick={(e) => e.stopPropagation()}
-                            style={{
-                              width: '180px',
-                              position: 'absolute',
-                              top: '-90px',
-                              right: '0',
-                              backgroundColor: '#2a2a2a',
-                              border: '2px solid #ffa500',
-                              borderRadius: '12px',
-                              padding: '12px',
-                              zIndex: '150',
-                              boxShadow: '0 8px 16px rgba(0,0,0,0.5)',
-                            }}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateActiveStatus(library, true);
-                              }}
-                              disabled={library.is_active}
+                        <p
+                          style={{
+                            color: library.is_active ? '#4CAF50' : '#f44336',
+                            margin: 0,
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                          }}>
+                          {library.is_active ? '✓ Faol' : '✗ Nofaol'}
+                        </p>
+                      </div>
+                      <div style={{ width: '100px' }}>
+                        <p
+                          style={{
+                            color: 'yellow',
+                            margin: 0,
+                            fontSize: '15px',
+                            fontWeight: '600',
+                          }}>
+                          📚 {library.total_books || 0} ta
+                        </p>
+                      </div>
+                      <div
+                        className="menu-container"
+                        style={{
+                          width: '100px',
+                          height: '40px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          paddingLeft: '10px',
+                          position: 'relative',
+                        }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(
+                              openMenuId === library.id ? null : library.id
+                            );
+                          }}
+                          disabled={updatingId === library.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '40px',
+                            height: '40px',
+                            border: '2px solid yellow',
+                            borderRadius: '50%',
+                            backgroundColor: '#1a1a1a',
+                            color: 'yellow',
+                            fontSize: '24px',
+                            cursor:
+                              updatingId === library.id ? 'wait' : 'pointer',
+                            transition: 'all 0.3s',
+                            opacity: updatingId === library.id ? 0.5 : 1,
+                          }}>
+                          {updatingId === library.id ? '⏳' : '⋮'}
+                        </button>
+                        {openMenuId === library.id &&
+                          updatingId !== library.id && (
+                            <div
+                              onClick={(e) => e.stopPropagation()}
                               style={{
-                                width: '100%',
-                                marginBottom: '8px',
-                                backgroundColor: library.is_active
-                                  ? '#555'
-                                  : '#4CAF50',
-                                color: library.is_active ? '#888' : 'white',
-                                border: 'none',
-                                borderRadius: '10px',
-                                padding: '10px',
-                                cursor: library.is_active
-                                  ? 'not-allowed'
-                                  : 'pointer',
-                                fontWeight: '600',
-                                fontSize: '14px',
-                                transition: 'all 0.3s',
+                                width: '180px',
+                                position: 'absolute',
+                                top: '-90px',
+                                right: '0',
+                                backgroundColor: '#2a2a2a',
+                                border: '2px solid #ffa500',
+                                borderRadius: '12px',
+                                padding: '12px',
+                                zIndex: '150',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.5)',
                               }}>
-                              {library.is_active
-                                ? '✓ Faol'
-                                : '✓ Faollashtirish'}
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateActiveStatus(library, false);
-                              }}
-                              disabled={!library.is_active}
-                              style={{
-                                width: '100%',
-                                backgroundColor: !library.is_active
-                                  ? '#555'
-                                  : '#f44336',
-                                color: !library.is_active ? '#888' : 'white',
-                                border: 'none',
-                                borderRadius: '10px',
-                                padding: '10px',
-                                cursor: !library.is_active
-                                  ? 'not-allowed'
-                                  : 'pointer',
-                                fontWeight: '600',
-                                fontSize: '14px',
-                                transition: 'all 0.3s',
-                              }}>
-                              {!library.is_active
-                                ? '✗ Nofaol'
-                                : '✗ Faolsizlantirish'}
-                            </button>
-                          </div>
-                        )}
-                    </div>
-                  </Flex>
-                </div>
-              ))
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateActiveStatus(library, true);
+                                }}
+                                disabled={library.is_active}
+                                style={{
+                                  width: '100%',
+                                  marginBottom: '8px',
+                                  backgroundColor: library.is_active
+                                    ? '#555'
+                                    : '#4CAF50',
+                                  color: library.is_active ? '#888' : 'white',
+                                  border: 'none',
+                                  borderRadius: '10px',
+                                  padding: '10px',
+                                  cursor: library.is_active
+                                    ? 'not-allowed'
+                                    : 'pointer',
+                                  fontWeight: '600',
+                                  fontSize: '14px',
+                                  transition: 'all 0.3s',
+                                }}>
+                                {library.is_active
+                                  ? '✓ Faol'
+                                  : '✓ Faollashtirish'}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  updateActiveStatus(library, false);
+                                }}
+                                disabled={!library.is_active}
+                                style={{
+                                  width: '100%',
+                                  backgroundColor: !library.is_active
+                                    ? '#555'
+                                    : '#f44336',
+                                  color: !library.is_active ? '#888' : 'white',
+                                  border: 'none',
+                                  borderRadius: '10px',
+                                  padding: '10px',
+                                  cursor: !library.is_active
+                                    ? 'not-allowed'
+                                    : 'pointer',
+                                  fontWeight: '600',
+                                  fontSize: '14px',
+                                  transition: 'all 0.3s',
+                                }}>
+                                {!library.is_active
+                                  ? '✗ Nofaol'
+                                  : '✗ Faolsizlantirish'}
+                              </button>
+                            </div>
+                          )}
+                      </div>
+                    </Flex>
+                  </div>
+                ))}
+                {renderPagination()}
+              </>
             )}
           </div>
         </Container>

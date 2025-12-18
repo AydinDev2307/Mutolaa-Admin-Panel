@@ -26,7 +26,6 @@ const Login = () => {
     mutationFn: async (body) => {
       console.log("📤 Yuborilayotgan ma'lumot:", body);
 
-      // URL ni to'liq tekshirish
       const fullUrl = `${API.defaults.baseURL}/auth/login/`;
       console.log("🌐 To'liq URL:", fullUrl);
 
@@ -42,12 +41,6 @@ const Login = () => {
     },
     onSuccess: (res) => {
       console.log('🎉 Login muvaffaqiyatli:', res);
-
-      // Backend turli formatda javob qaytarishi mumkin, tekshiramiz
-      // Format 1: { accessToken, refreshToken, user }
-      // Format 2: { access_token, refresh_token, user }
-      // Format 3: { access, refresh, user }
-      // Format 4: { token, user }
 
       const userData = {
         accessToken:
@@ -83,7 +76,6 @@ const Login = () => {
       let errorMessage = 'Login yoki parol xato';
 
       if (err.response?.data) {
-        // Turli xato formatlari
         errorMessage =
           err.response.data.message ||
           err.response.data.detail ||

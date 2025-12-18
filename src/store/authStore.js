@@ -5,27 +5,11 @@ const useAuthStore = create((set) => ({
   user: JSON.parse(localStorage.getItem('user') || 'null'),
 
   login: (data) => {
-    console.log("💾 Login ma'lumotlari saqlanmoqda:", data);
-
     const accessToken =
       data.accessToken || data.access_token || data.access || data.token;
     const refreshToken =
       data.refreshToken || data.refresh_token || data.refresh;
     const user = data.user || data;
-
-    console.log(
-      '🔑 Access Token:',
-      accessToken ? `${accessToken.substring(0, 30)}...` : 'topilmadi'
-    );
-    console.log(
-      '🔄 Refresh Token:',
-      refreshToken ? `${refreshToken.substring(0, 30)}...` : 'topilmadi'
-    );
-
-    if (!accessToken) {
-      console.error('⚠️ Access token topilmadi!');
-      return;
-    }
 
     set({
       user,
@@ -39,12 +23,9 @@ const useAuthStore = create((set) => ({
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
     }
-
-    console.log('✅ Login muvaffaqiyatli saqlandi');
   },
 
   logout: () => {
-    console.log('🚪 Logout...');
     set({
       user: null,
       isAuth: false,
@@ -69,11 +50,6 @@ const useAuthStore = create((set) => ({
   checkAuth: () => {
     const token = localStorage.getItem('access_token');
     const user = localStorage.getItem('user');
-
-    console.log('🔍 Auth tekshirilmoqda:', {
-      hasToken: !!token,
-      hasUser: !!user,
-    });
 
     if (token) {
       set({
