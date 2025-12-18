@@ -1,3 +1,4 @@
+import { Navigate } from 'react-router-dom';
 import { create } from 'zustand';
 
 const useAuthStore = create((set) => ({

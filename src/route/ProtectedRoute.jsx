@@ -4,7 +4,7 @@ import useAuthStore from '../store/authStore';
 const ProtectedRoute = () => {
   const isAuth = useAuthStore((state) => state.isAuth);
 
-  return isAuth ? <Outlet /> : <Navigate to="/login" replace />;
+  return !isAuth ? <Navigate to="/login" replace /> : <Outlet />;
 };
 
 export default ProtectedRoute;
