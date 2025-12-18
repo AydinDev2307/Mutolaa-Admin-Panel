@@ -11,7 +11,7 @@ const Footer = () => {
       <Container fluid w={1600}>
         <div style={{ textAlign: 'center' }}>
           <p style={{ color: 'yellow', margin: 0 }}>
-            © 2024 Mutolaa Admin. Barcha huquqlar himoyalangan.
+            © 2025 Mutolaa Admin. Barcha huquqlar himoyalangan.
           </p>
         </div>
       </Container>
