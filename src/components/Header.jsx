@@ -1,28 +1,51 @@
 import { Container, Flex } from '@mantine/core';
+import useAuthStore from '../store/authStore';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
+  function chiqish() {
+    logout();
+    navigate('/login');
+  }
+  function addLibrary() {
+    navigate('https://mutolaa-azure.vercel.app/register');
+  }
   return (
     <>
       <header style={{ backgroundColor: '#151515f6' }}>
         <Container fluid w={'1600px'}>
-          <nav style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <nav
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '15px 0',
+            }}>
             <Flex style={{ alignItems: 'center', gap: '20px' }}>
-              <h1 style={{ color: 'yellow' }}>Mutolaa Admin</h1>
+              <h1 style={{ color: 'yellow', margin: 0 }}>Mutolaa Admin</h1>
               <button
+                onClick={addLibrary}
                 style={{
                   backgroundColor: 'yellow',
                   border: 'none',
-                  width: '100px',
+                  width: '150px',
+                  height: '35px',
                   borderRadius: '8px',
                   fontWeight: '700',
-                  fontSize: '17px',
+                  fontSize: '14px',
                   cursor: 'pointer',
                 }}>
-                Menyu
+                Kutubxona Qo'shish
               </button>
             </Flex>
-            <Flex>
-              <h1 style={{ color: 'yellow' }}>Admin</h1>
+            <Flex style={{ alignItems: 'center' }}>
+              <h1
+                onClick={chiqish}
+                style={{ color: 'red', cursor: 'pointer', margin: 0 }}>
+                Chiqish
+              </h1>
             </Flex>
           </nav>
         </Container>
