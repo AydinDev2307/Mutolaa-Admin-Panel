@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import ProtectedRoute from './route/ProtectedRoute';
 import AddLibrary from './pages/AddLibrary';
 import Detail from './pages/Detail';
+import Favorites from './pages/Favorites';
 const App = () => {
   return (
     <>
@@ -15,6 +16,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/addLibrary" element={<AddLibrary />} />
             <Route path="/detail/:id" element={<Detail />} />
+            <Route path="/favorites" element={<Favorites />} />
           </Route>
         </Route>
       </Routes>

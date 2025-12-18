@@ -1,4 +1,4 @@
-import { Button, PasswordInput, Input, Container } from '@mantine/core';
+import { Button, PasswordInput, Input } from '@mantine/core';
 import { useMutation } from '@tanstack/react-query';
 import { API } from '../centerAPI/API';
 import { notifications } from '@mantine/notifications';
@@ -24,24 +24,10 @@ const Login = () => {
 
   const { mutate: loginMut, isPending } = useMutation({
     mutationFn: async (body) => {
-      console.log("📤 Yuborilayotgan ma'lumot:", body);
-
-      const fullUrl = `${API.defaults.baseURL}/auth/login/`;
-      console.log("🌐 To'liq URL:", fullUrl);
-
-      try {
-        const res = await API.post('/auth/login/', body);
-        console.log('✅ API javob:', res.data);
-        return res.data;
-      } catch (error) {
-        console.error('❌ API xatosi:', error);
-        console.error('📋 Xato response:', error.response);
-        throw error;
-      }
+      const res = await API.post('/auth/login/', body);
+      return res.data;
     },
     onSuccess: (res) => {
-      console.log('🎉 Login muvaffaqiyatli:', res);
-
       const userData = {
         accessToken:
           res.accessToken || res.access_token || res.access || res.token,
@@ -49,10 +35,7 @@ const Login = () => {
         user: res.user || res,
       };
 
-      console.log("💾 Saqlanayotgan ma'lumot:", userData);
-
       if (!userData.accessToken) {
-        console.error('⚠️ Token topilmadi!', res);
         notifications.show({
           title: 'Xato',
           message: 'Token topilmadi. Backend javobini tekshiring.',
@@ -63,16 +46,12 @@ const Login = () => {
 
       login(userData);
       notifications.show({
-        title: 'Muvaffaqiyatli',
+        title: 'Muvaffaqiyatli!',
         message: 'Tizimga muvaffaqiyatli kirdingiz',
         color: 'green',
       });
     },
     onError: (err) => {
-      console.error('❌ Login xatosi:', err);
-      console.error('📄 Xato response:', err.response?.data);
-      console.error('📊 Xato status:', err.response?.status);
-
       let errorMessage = 'Login yoki parol xato';
 
       if (err.response?.data) {
@@ -99,14 +78,10 @@ const Login = () => {
   });
 
   if (isAuth) {
-    console.log(
-      "✅ Foydalanuvchi autentifikatsiya qilingan, bosh sahifaga yo'naltirish"
-    );
     return <Navigate to="/" replace />;
   }
 
   const onSubmit = (data) => {
-    console.log("📝 Form ma'lumotlari:", data);
     loginMut({
       phone: data.phone,
       password: data.password,
@@ -116,70 +91,234 @@ const Login = () => {
   return (
     <>
       <Notifications position="top-right" zIndex={1000} />
-      <Container
-        size="xs"
-        py="xl"
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: '#f5f5f5',
-        }}>
-        <div
-          style={{
-            width: '100%',
-            backgroundColor: 'white',
-            padding: '40px',
-            borderRadius: '15px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          }}>
-          <h1
-            style={{
-              textAlign: 'center',
-              marginBottom: '30px',
-              color: '#333',
-            }}>
-            Tizimga kirish
-          </h1>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Input
-              placeholder="Telefon raqam (masalan: +998901234567)"
-              mb="md"
-              size="md"
-              {...register('phone', {
-                required: 'Telefon raqam majburiy',
-                pattern: {
-                  value:
-                    /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/,
-                  message: "Telefon raqam formati noto'g'ri",
-                },
-              })}
-              error={errors.phone?.message}
-            />
-            <PasswordInput
-              placeholder="Parol"
-              mb="md"
-              size="md"
-              {...register('password', {
-                required: 'Parol majburiy',
-                minLength: {
-                  value: 4,
-                  message: "Parol kamida 4 ta belgidan iborat bo'lishi kerak",
-                },
-              })}
-              error={errors.password?.message}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              loading={isPending}
-              size="md"
-              style={{ marginTop: '10px' }}>
-              Kirish
-            </Button>
-          </form>
+      <style>{`
+        .login-page {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #0f0a1e 0%, #1e1b4b 100%);
+          padding: 20px;
+        }
+
+        .login-container {
+          width: 100%;
+          max-width: 480px;
+        }
+
+        .login-card {
+          background: rgba(30, 27, 75, 0.6);
+          border: 2px solid rgba(139, 92, 246, 0.4);
+          border-radius: 24px;
+          padding: 50px 40px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-header {
+          text-align: center;
+          margin-bottom: 40px;
+        }
+
+        .login-icon {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 40px;
+          margin: 0 auto 20px;
+          box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+        }
+
+        .login-title {
+          font-size: 2rem;
+          font-weight: 800;
+          color: white;
+          margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+          font-size: 15px;
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .login-form {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .form-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.8);
+        }
+
+        .mantine-Input-wrapper,
+        .mantine-PasswordInput-wrapper {
+          width: 100%;
+        }
+
+        .mantine-Input-input,
+        .mantine-PasswordInput-input {
+          background: rgba(15, 10, 30, 0.6) !important;
+          border: 2px solid rgba(139, 92, 246, 0.3) !important;
+          color: white !important;
+          padding: 14px 18px !important;
+          border-radius: 12px !important;
+          font-size: 15px !important;
+          transition: all 0.3s ease !important;
+        }
+
+        .mantine-Input-input:focus,
+        .mantine-PasswordInput-input:focus {
+          border-color: #8b5cf6 !important;
+          box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2) !important;
+        }
+
+        .mantine-Input-input::placeholder,
+        .mantine-PasswordInput-input::placeholder {
+          color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .error-message {
+          color: #ef4444;
+          font-size: 13px;
+          margin-top: 4px;
+        }
+
+        .mantine-Button-root {
+          background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%) !important;
+          color: white !important;
+          font-weight: 700 !important;
+          padding: 16px 24px !important;
+          border-radius: 12px !important;
+          font-size: 16px !important;
+          border: none !important;
+          box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4) !important;
+          transition: all 0.3s ease !important;
+          margin-top: 10px !important;
+        }
+
+        .mantine-Button-root:hover:not(:disabled) {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5) !important;
+        }
+
+        .mantine-Button-root:disabled {
+          opacity: 0.6 !important;
+          cursor: not-allowed !important;
+        }
+
+        .login-footer {
+          text-align: center;
+          margin-top: 30px;
+          padding-top: 25px;
+          border-top: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        .login-footer-text {
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 14px;
+          margin-bottom: 10px;
+        }
+
+        .login-footer-brand {
+          color: #a78bfa;
+          font-weight: 700;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+
+        @media (max-width: 480px) {
+          .login-card {
+            padding: 35px 25px;
+          }
+
+          .login-title {
+            font-size: 1.6rem;
+          }
+        }
+      `}</style>
+
+      <div className="login-page">
+        <div className="login-container">
+          <div className="login-card">
+            <div className="login-header">
+              <div className="login-icon">📚</div>
+              <h1 className="login-title">Xush kelibsiz</h1>
+              <p className="login-subtitle">
+                Tizimga kirish uchun ma'lumotlaringizni kiriting
+              </p>
+            </div>
+
+            <form className="login-form" onSubmit={handleSubmit(onSubmit)}>
+              <div className="form-group">
+                <label className="form-label">Telefon raqam</label>
+                <Input
+                  placeholder="+998 90 123 45 67"
+                  size="md"
+                  {...register('phone', {
+                    required: 'Telefon raqam majburiy',
+                    pattern: {
+                      value:
+                        /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/,
+                      message: "Telefon raqam formati noto'g'ri",
+                    },
+                  })}
+                />
+                {errors.phone && (
+                  <span className="error-message">{errors.phone.message}</span>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Parol</label>
+                <PasswordInput
+                  placeholder="Parolingizni kiriting"
+                  size="md"
+                  {...register('password', {
+                    required: 'Parol majburiy',
+                    minLength: {
+                      value: 4,
+                      message:
+                        "Parol kamida 4 ta belgidan iborat bo'lishi kerak",
+                    },
+                  })}
+                />
+                {errors.password && (
+                  <span className="error-message">
+                    {errors.password.message}
+                  </span>
+                )}
+              </div>
+
+              <Button type="submit" fullWidth loading={isPending} size="md">
+                {isPending ? 'Tekshirilmoqda...' : 'Kirish'}
+              </Button>
+            </form>
+
+            <div className="login-footer">
+              <p className="login-footer-text">Powered by</p>
+              <div className="login-footer-brand">
+                <span>📚</span>
+                <span>Mutolaa Admin Panel</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </Container>
+      </div>
     </>
   );
 };
