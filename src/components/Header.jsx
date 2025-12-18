@@ -37,7 +37,7 @@ const Header = () => {
                   fontSize: '14px',
                   cursor: 'pointer',
                 }}>
-                Kutubxona Qo'shish
+                Kutubxona ochish
               </button>
             </Flex>
             <Flex style={{ alignItems: 'center' }}>
